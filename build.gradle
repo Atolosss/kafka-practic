@@ -1,0 +1,69 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'ru.practical'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.apache.kafka:kafka-clients:3.6.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+}
+
+application {
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'ru.practical.producer.KafkaProducerApp'
+        )
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+tasks.register('producerJar', Jar) {
+    archiveClassifier = 'producer'
+    from sourceSets.main.output
+    manifest {
+        attributes 'Main-Class': 'ru.practical.producer.KafkaProducerApp'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+tasks.register('singleConsumerJar', Jar) {
+    archiveClassifier = 'single-consumer'
+    from sourceSets.main.output
+    manifest {
+        attributes 'Main-Class': 'ru.practical.consumer.SingleMessageConsumer'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+tasks.register('batchConsumerJar', Jar) {
+    archiveClassifier = 'batch-consumer'
+    from sourceSets.main.output
+    manifest {
+        attributes 'Main-Class': 'ru.practical.consumer.BatchMessageConsumer'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
