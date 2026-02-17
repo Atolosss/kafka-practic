@@ -23,7 +23,7 @@ application {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'ru.practical.producer.KafkaProducerApp'
+                'Main-Class': 'org.kafka.producer.KafkaProducerApp'
         )
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -36,7 +36,7 @@ tasks.register('producerJar', Jar) {
     archiveClassifier = 'producer'
     from sourceSets.main.output
     manifest {
-        attributes 'Main-Class': 'ru.practical.producer.KafkaProducerApp'
+        attributes 'Main-Class': 'org.kafka.producer.KafkaProducerApp'
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
@@ -48,7 +48,7 @@ tasks.register('singleConsumerJar', Jar) {
     archiveClassifier = 'single-consumer'
     from sourceSets.main.output
     manifest {
-        attributes 'Main-Class': 'ru.practical.consumer.SingleMessageConsumer'
+        attributes 'Main-Class': 'org.kafka.consumer.SingleMessageConsumer'
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
@@ -60,7 +60,7 @@ tasks.register('batchConsumerJar', Jar) {
     archiveClassifier = 'batch-consumer'
     from sourceSets.main.output
     manifest {
-        attributes 'Main-Class': 'ru.practical.consumer.BatchMessageConsumer'
+        attributes 'Main-Class': 'org.kafka.consumer.BatchMessageConsumer'
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
