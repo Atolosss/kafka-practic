@@ -19,12 +19,10 @@ public class MessageSerializer implements Serializer<Message> {
     @Override
     public byte[] serialize(String topic, Message data) {
         if (data == null) {
-            logger.warn("Попытка сериализовать null-сообщение");
             return null;
         }
         try {
             String json = objectMapper.writeValueAsString(data);
-            logger.info("Сериализовано сообщение: {}", json);
             return json.getBytes();
         } catch (Exception e) {
             logger.error("Ошибка сериализации сообщения: " + data, e);

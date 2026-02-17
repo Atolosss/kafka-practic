@@ -19,12 +19,10 @@ public class MessageDeserializer implements Deserializer<Message> {
     @Override
     public Message deserialize(String topic, byte[] data) {
         if (data == null) {
-            logger.warn("Получены пустые данные для десериализации");
             return null;
         }
         try {
             Message message = objectMapper.readValue(data, Message.class);
-            logger.info("Десериализовано сообщение: {}", message);
             return message;
         } catch (Exception e) {
             logger.error("Ошибка десериализации данных: " + new String(data), e);
