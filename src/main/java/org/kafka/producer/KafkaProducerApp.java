@@ -37,18 +37,7 @@ public class KafkaProducerApp {
             String key = "key-" + i;
             Message message = new Message("msg-" + i, "Сообщение #" + i + " от " + System.currentTimeMillis());
             ProducerRecord<String, Message> record = new ProducerRecord<>(TOPIC, key, message);
-            try {
-                producer.send(record).get();
-            } catch (InterruptedException e) {
-                logger.error("Продюсер прерван", e);
-                break;
-            } catch (ExecutionException e) {
-                if (e.getCause() instanceof RecordTooLargeException) {
-                    logger.error("Сообщение слишком большое: {}", message.getId());
-                } else {
-                    logger.error("Ошибка отправки сообщения {}: {}", message.getId(), e.getMessage());
-                }
-            }
+            producer.send(record);
         }
 
         producer.flush();

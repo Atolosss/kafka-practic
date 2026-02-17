@@ -10,12 +10,12 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BatchMessageConsumer {
     private static final Logger logger = LoggerFactory.getLogger(BatchMessageConsumer.class);
     private static final String TOPIC = "practical-topic";
     private static final String GROUP_ID = "batch-group-1"; // Уникальная группа
-    private static final int BATCH_SIZE = 10;
 
     public static void main(String[] args) {
         var props = new Properties();
@@ -28,25 +28,29 @@ public class BatchMessageConsumer {
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
         // Настройки для получения пачек
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "100");
         props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, "1024"); // Минимум 1 КБ данных
         props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, "500"); // Макс. ожидание 500 мс
 
         KafkaConsumer<String, Message> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList(TOPIC));
-        logger.info("BatchMessageConsumer запущен. Группа: {}. Целевой размер пачки: {} сообщений", GROUP_ID, BATCH_SIZE);
+        logger.info("BatchMessageConsumer запущен. Группа: {}.", GROUP_ID);
 
+        AtomicBoolean running = new AtomicBoolean(true);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Завершение работы BatchMessageConsumer...");
+            logger.info("Сигнал остановки получен...");
+            running.set(false);
             consumer.wakeup();
         }));
 
         try {
-            while (true) {
+            while (running.get()) {
+                // Забираем всё, что Kafka успела собрать за время ожидания
                 ConsumerRecords<String, Message> records = consumer.poll(Duration.ofMillis(1000));
                 int count = records.count();
 
                 if (count > 0) {
-                    logger.info("Получена пачка из {} сообщений", count);
+                    logger.info("Получено сообщений: {}", count);
 
                     for (ConsumerRecord<String, Message> record : records) {
                         try {
@@ -60,7 +64,6 @@ public class BatchMessageConsumer {
                                     record.key(), e.getMessage(), e);
                         }
                     }
-
                     try {
                         consumer.commitSync();
                         logger.info("Коммит выполнен для {} сообщений", count);
@@ -70,15 +73,18 @@ public class BatchMessageConsumer {
                 }
             }
         } catch (WakeupException e) {
-            logger.info("Потребитель пробужден для завершения");
+            if (running.get()) {
+                logger.error("Неожиданное прерывание", e);
+            } else {
+                logger.info("Потребитель остановлен корректно");
+            }
         } finally {
             try {
                 consumer.commitSync();
             } catch (Exception e) {
-                logger.warn("Не удалось выполнить финальный коммит", e);
+                logger.warn("Финальный коммит не удался", e);
             }
             consumer.close();
-            logger.info("BatchMessageConsumer остановлен");
         }
     }
 }

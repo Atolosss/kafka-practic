@@ -42,7 +42,7 @@ public class SingleMessageConsumer {
 
         try {
             while (true) {
-                ConsumerRecords<String, Message> records = consumer.poll(Duration.ofMillis(100));
+                ConsumerRecords<String, Message> records = consumer.poll(Duration.ofMillis(1000));
                 for (ConsumerRecord<String, Message> record : records) {
                     try {
                         Message message = record.value();
